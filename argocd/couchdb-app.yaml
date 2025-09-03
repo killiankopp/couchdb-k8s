@@ -32,7 +32,7 @@ spec:
           nodeCount: 1
   destination:
     server: https://kubernetes.default.svc
-    namespace: couchdb
+    namespace: kk
   syncPolicy:
     automated:
       prune: true
