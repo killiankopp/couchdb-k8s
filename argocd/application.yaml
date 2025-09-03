@@ -43,6 +43,12 @@ spec:
           value: "500m"
         - name: resources.requests.memory
           value: "1Gi"
+        - name: ingress.enabled
+          value: "true"
+        - name: ingress.className
+          value: "nginx"
+        - name: ingress.hosts[0].host
+          value: "couchdb.kk.karned.bzh"
   destination:
     server: https://kubernetes.default.svc
     namespace: kk

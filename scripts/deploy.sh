@@ -161,6 +161,7 @@ show_connection_info() {
     log_info "CouchDB est déployé et accessible :"
     echo "  - URL interne: http://${SERVICE_IP}:${SERVICE_PORT}"
     echo "  - URL FQDN: http://couchdb.${NAMESPACE}.svc.cluster.local:${SERVICE_PORT}"
+    echo "  - URL publique: https://couchdb.kk.karned.bzh"
     echo ""
     
     # Afficher les commandes utiles
@@ -169,6 +170,7 @@ show_connection_info() {
     echo "  - Accéder au pod: kubectl exec -it -n ${NAMESPACE} deployment/couchdb -- /bin/bash"
     echo "  - Voir le statut: kubectl get all -n ${NAMESPACE}"
     echo "  - Interface ArgoCD: kubectl port-forward -n ${ARGOCD_NAMESPACE} svc/argocd-server 8080:443"
+    echo "  - Tester l'accès public: curl -I https://couchdb.kk.karned.bzh/_up"
     echo ""
 }
 

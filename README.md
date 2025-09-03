@@ -48,6 +48,10 @@ couchdb-k8s/
 └── README.md                    # Cette documentation
 ```
 
+## 🌐 Accès
+
+CouchDB sera accessible via : **https://couchdb.kk.karned.bzh**
+
 ## 🚀 Déploiement Rapide
 
 ### Prérequis
@@ -57,6 +61,9 @@ couchdb-k8s/
 - Sealed Secrets Controller installé
 - Helm 3.x
 - kubectl configuré
+- **Ingress Controller** (nginx-ingress)
+- **cert-manager** (pour les certificats SSL)
+- **Configuration DNS** pour `couchdb.kk.karned.bzh`
 
 ### 1. Installation des prérequis
 
@@ -67,9 +74,21 @@ kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/downloa
 # Installer ArgoCD (si pas déjà fait)
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# Installer nginx-ingress (si pas déjà fait)
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.1/deploy/static/provider/cloud/deploy.yaml
+
+# Installer cert-manager (si pas déjà fait)
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
 ```
 
-### 2. Configuration des secrets
+### 2. Configuration DNS
+
+Configurez un enregistrement DNS pour `couchdb.kk.karned.bzh` pointant vers votre cluster Kubernetes.
+
+Voir [docs/dns-configuration.md](docs/dns-configuration.md) pour plus de détails.
+
+### 3. Configuration des secrets
 
 ```bash
 # Générer les secrets scellés
@@ -77,11 +96,21 @@ cd secrets/
 ./generate-secrets.sh
 ```
 
-### 3. Déploiement via ArgoCD
+### 4. Déploiement via ArgoCD
 
 ```bash
 # Appliquer l'application ArgoCD
 kubectl apply -f argocd/application.yaml
+```
+
+### 5. Vérification de l'accès
+
+```bash
+# Vérifier que l'Ingress est créé
+kubectl get ingress -n kk
+
+# Tester l'accès
+curl -I https://couchdb.kk.karned.bzh/_up
 ```
 
 ## 🔐 Sécurité
