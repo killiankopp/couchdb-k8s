@@ -8,9 +8,9 @@ spec:
   source:
     repoURL: "https://charts.bitnami.com/bitnami"
     chart: couchdb
-    targetRevision: "latest"
-    helm:
-      values: |
+  targetRevision: "15.0.2"
+  helm:
+    values: |
         service:
           type: ClusterIP
         ingress:
