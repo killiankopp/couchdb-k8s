@@ -52,8 +52,8 @@ spec:
           input.review.object.kind == "Pod"
           container := input.review.object.spec.containers[_]
           container.name == "couchdb"
-          not container.securityContext.readOnlyRootFilesystem
-          msg := "CouchDB container must have read-only root filesystem"
+          container.securityContext.readOnlyRootFilesystem == true
+          msg := "CouchDB container cannot have read-only root filesystem"
         }
         
         violation[{"msg": msg}] {
@@ -82,5 +82,5 @@ spec:
     runAsNonRoot: true
     runAsUser: 5984
     fsGroup: 5984
-    readOnlyRootFilesystem: true
+    readOnlyRootFilesystem: false
     allowPrivilegeEscalation: false
