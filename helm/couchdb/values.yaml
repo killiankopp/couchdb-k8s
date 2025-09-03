@@ -26,9 +26,9 @@ serviceAccount:
 podAnnotations: {}
 
 podSecurityContext:
-  fsGroup: 5984
-  runAsUser: 5984
-  runAsNonRoot: true
+  fsGroup: 0
+  runAsUser: 0
+  runAsNonRoot: false
   seccompProfile:
     type: RuntimeDefault
 
@@ -38,8 +38,8 @@ securityContext:
     drop:
     - ALL
   readOnlyRootFilesystem: false
-  runAsNonRoot: true
-  runAsUser: 5984
+  runAsNonRoot: false
+  runAsUser: 0
 
 service:
   type: ClusterIP

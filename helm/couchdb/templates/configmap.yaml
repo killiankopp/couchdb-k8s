@@ -12,49 +12,14 @@ data:
     [chttpd]
     port = {{ .Values.service.port }}
     bind_address = 0.0.0.0
-    {{- if .Values.couchdb.config.https.enabled }}
-    https_port = {{ .Values.couchdb.config.https.port }}
-    {{- end }}
     
     [httpd]
     {{- if .Values.couchdb.config.security.requireValidUser }}
     require_valid_user = {{ .Values.couchdb.config.security.requireValidUser }}
     {{- end }}
-    {{- if .Values.couchdb.config.security.httpsOnly }}
-    https_only = {{ .Values.couchdb.config.security.httpsOnly }}
-    {{- end }}
-    {{- if .Values.couchdb.config.security.sessionTimeout }}
-    timeout = {{ .Values.couchdb.config.security.sessionTimeout }}
-    {{- end }}
     
     [log]
     level = {{ .Values.couchdb.config.logLevel }}
     
-    {{- if .Values.couchdb.config.cors.enabled }}
-    [httpd_global_handlers]
-    _cors = {couch_httpd_cors, handle_cors_req}
-    
-    [cors]
-    origins = {{ .Values.couchdb.config.cors.origins }}
-    credentials = true
-    headers = accept, authorization, content-type, origin, referer, x-csrf-token
-    methods = GET, HEAD, POST, PUT, DELETE, OPTIONS
-    {{- end }}
-    
-    {{- if .Values.couchdb.config.https.enabled }}
-    [ssl]
-    cert_file = /opt/couchdb/etc/cert/tls.crt
-    key_file = /opt/couchdb/etc/cert/tls.key
-    {{- end }}
-    
-    [couch_httpd_auth]
-    {{- if .Values.couchdb.config.security.requireValidUser }}
-    require_valid_user = {{ .Values.couchdb.config.security.requireValidUser }}
-    {{- end }}
-    
     [admins]
     {{ .Values.couchdb.admin.username }} = {{ randAlphaNum 32 }}
-  
-  docker.ini: |
-    [couchdb]
-    single_node = {{ .Values.couchdb.config.singleNode }}

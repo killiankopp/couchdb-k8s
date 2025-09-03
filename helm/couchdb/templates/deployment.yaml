@@ -27,37 +27,7 @@ spec:
       serviceAccountName: {{ include "couchdb.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      initContainers:
-        - name: config-init
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command:
-            - /bin/bash
-            - -c
-            - |
-              # Créer les répertoires nécessaires
-              mkdir -p /opt/couchdb/etc/local.d
-              mkdir -p /opt/couchdb/var/log
-              mkdir -p /opt/couchdb/data
-              
-              # Créer les fichiers de configuration de base
-              echo "[couchdb]" > /opt/couchdb/etc/local.d/docker.ini
-              echo "single_node = true" >> /opt/couchdb/etc/local.d/docker.ini
-              
-              # Définir les permissions
-              chown -R couchdb:couchdb /opt/couchdb/etc /opt/couchdb/var/log /opt/couchdb/data
-              chmod -R 755 /opt/couchdb/etc /opt/couchdb/var/log
-              chmod -R 700 /opt/couchdb/data
-          volumeMounts:
-            - name: couchdb-etc
-              mountPath: /opt/couchdb/etc
-            - name: couchdb-logs
-              mountPath: /opt/couchdb/var/log
-            - name: couchdb-data
-              mountPath: /opt/couchdb/data
-          securityContext:
-            runAsUser: 0
-            runAsNonRoot: false
+
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -133,14 +103,8 @@ spec:
           volumeMounts:
             - name: couchdb-data
               mountPath: /opt/couchdb/data
-            - name: couchdb-etc
-              mountPath: /opt/couchdb/etc
             - name: couchdb-config
-              mountPath: /opt/couchdb/etc/local.d/local.ini
-              subPath: local.ini
-            - name: couchdb-config
-              mountPath: /opt/couchdb/etc/local.d/docker.ini
-              subPath: docker.ini
+              mountPath: /opt/couchdb/etc/local.d
             - name: couchdb-logs
               mountPath: /opt/couchdb/var/log
             - name: tmp
@@ -157,8 +121,6 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
-        - name: couchdb-etc
-          emptyDir: {}
         - name: couchdb-config
           configMap:
             name: {{ include "couchdb.fullname" . }}-config
