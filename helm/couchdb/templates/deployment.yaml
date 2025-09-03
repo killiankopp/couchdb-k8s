@@ -103,8 +103,6 @@ spec:
           volumeMounts:
             - name: couchdb-data
               mountPath: /opt/couchdb/data
-            - name: couchdb-config
-              mountPath: /opt/couchdb/etc/local.d
             - name: couchdb-logs
               mountPath: /opt/couchdb/var/log
             - name: tmp
@@ -121,9 +119,6 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
-        - name: couchdb-config
-          configMap:
-            name: {{ include "couchdb.fullname" . }}-config
         - name: couchdb-logs
           emptyDir: {}
         - name: tmp
