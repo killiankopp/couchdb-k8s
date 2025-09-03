@@ -54,3 +54,7 @@ data:
     
     [admins]
     {{ .Values.couchdb.admin.username }} = {{ randAlphaNum 32 }}
+  
+  docker.ini: |
+    [couchdb]
+    single_node = {{ .Values.couchdb.config.singleNode }}

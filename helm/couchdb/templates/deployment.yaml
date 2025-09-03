@@ -40,13 +40,9 @@ spec:
               mkdir -p /opt/couchdb/var/log
               mkdir -p /opt/couchdb/data
               
-              # Copier la configuration par défaut
-              if [ -d /opt/couchdb/etc/default.d ]; then
-                cp -r /opt/couchdb/etc/default.d/* /opt/couchdb/etc/local.d/ 2>/dev/null || true
-              fi
-              
-              # Créer le fichier docker.ini vide si nécessaire
-              touch /opt/couchdb/etc/local.d/docker.ini
+              # Créer les fichiers de configuration de base
+              echo "[couchdb]" > /opt/couchdb/etc/local.d/docker.ini
+              echo "single_node = true" >> /opt/couchdb/etc/local.d/docker.ini
               
               # Définir les permissions
               chown -R couchdb:couchdb /opt/couchdb/etc /opt/couchdb/var/log /opt/couchdb/data
@@ -122,6 +118,8 @@ spec:
               value: "couchdb@127.0.0.1"
             - name: ERL_FLAGS
               value: "-setcookie {{ include "couchdb.erlangCookie" . }}"
+            - name: COUCHDB_NODENAME
+              value: "couchdb@127.0.0.1"
             {{- if .Values.couchdb.config.singleNode }}
             - name: COUCHDB_SINGLE_NODE
               value: "true"
@@ -140,6 +138,9 @@ spec:
             - name: couchdb-config
               mountPath: /opt/couchdb/etc/local.d/local.ini
               subPath: local.ini
+            - name: couchdb-config
+              mountPath: /opt/couchdb/etc/local.d/docker.ini
+              subPath: docker.ini
             - name: couchdb-logs
               mountPath: /opt/couchdb/var/log
             - name: tmp
