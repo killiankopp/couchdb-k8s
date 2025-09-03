@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: couchdb
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: "https://charts.bitnami.com/bitnami"
+    chart: couchdb
+    targetRevision: "latest"
+    helm:
+      values: |
+        service:
+          type: ClusterIP
+        ingress:
+          enabled: true
+          hostname: couchdb.kk.karned.bzh
+          ingressClassName: nginx
+          pathType: ImplementationSpecific
+          annotations:
+            kubernetes.io/ingress.class: nginx
+            cert-manager.io/cluster-issuer: "letsencrypt-prod"
+          tls: true
+          extraTls:
+            - hosts:
+                - couchdb.kk.karned.bzh
+              secretName: couchdb-tls
+        couchdb:
+          user: admin
+          password: changeme
+          nodeCount: 1
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: couchdb
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
