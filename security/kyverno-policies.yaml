@@ -1,0 +1,116 @@
+# Kyverno policies for CouchDB security
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: couchdb-security-policy
+  labels:
+    app.kubernetes.io/name: couchdb
+    app.kubernetes.io/instance: couchdb
+    app.kubernetes.io/managed-by: ArgoCD
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+  - name: check-couchdb-security-context
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+          namespaces:
+          - kk
+    validate:
+      message: "CouchDB pods must have proper security context"
+      pattern:
+        spec:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 5984
+            fsGroup: 5984
+          containers:
+          - name: "couchdb"
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              runAsNonRoot: true
+              runAsUser: 5984
+              capabilities:
+                drop:
+                - ALL
+  - name: check-couchdb-resources
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+          namespaces:
+          - kk
+    validate:
+      message: "CouchDB pods must have resource limits and requests"
+      pattern:
+        spec:
+          containers:
+          - name: "couchdb"
+            resources:
+              limits:
+                memory: "?*"
+                cpu: "?*"
+              requests:
+                memory: "?*"
+                cpu: "?*"
+  - name: check-couchdb-network-policy
+    match:
+      any:
+      - resources:
+          kinds:
+          - NetworkPolicy
+          namespaces:
+          - kk
+    validate:
+      message: "Network policies must be present for CouchDB namespace"
+      pattern:
+        metadata:
+          name: "couchdb-network-policy"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: couchdb-image-policy
+  labels:
+    app.kubernetes.io/name: couchdb
+    app.kubernetes.io/instance: couchdb
+    app.kubernetes.io/managed-by: ArgoCD
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+  - name: check-couchdb-image
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+          namespaces:
+          - kk
+    validate:
+      message: "Only official CouchDB images are allowed"
+      pattern:
+        spec:
+          containers:
+          - name: "couchdb"
+            image: "couchdb:*"
+  - name: check-image-pull-policy
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+          namespaces:
+          - kk
+    validate:
+      message: "Image pull policy must be IfNotPresent or Always"
+      pattern:
+        spec:
+          containers:
+          - name: "couchdb"
+            imagePullPolicy: "IfNotPresent | Always"

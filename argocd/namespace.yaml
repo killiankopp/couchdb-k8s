@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kk
+  labels:
+    name: kk
+    app.kubernetes.io/name: couchdb
+    app.kubernetes.io/instance: couchdb
+    app.kubernetes.io/managed-by: ArgoCD
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"

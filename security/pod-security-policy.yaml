@@ -1,0 +1,63 @@
+# Pod Security Policy for CouchDB
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: couchdb-psp
+  labels:
+    app.kubernetes.io/name: couchdb
+    app.kubernetes.io/instance: couchdb
+    app.kubernetes.io/managed-by: ArgoCD
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  seLinux:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+  readOnlyRootFilesystem: true
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: couchdb-psp-user
+  labels:
+    app.kubernetes.io/name: couchdb
+    app.kubernetes.io/instance: couchdb
+    app.kubernetes.io/managed-by: ArgoCD
+rules:
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs: ['use']
+  resourceNames:
+  - couchdb-psp
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: couchdb-psp-user
+  labels:
+    app.kubernetes.io/name: couchdb
+    app.kubernetes.io/instance: couchdb
+    app.kubernetes.io/managed-by: ArgoCD
+roleRef:
+  kind: ClusterRole
+  name: couchdb-psp-user
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: couchdb-sa
+  namespace: kk

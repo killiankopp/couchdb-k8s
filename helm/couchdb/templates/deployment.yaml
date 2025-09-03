@@ -1,0 +1,144 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "couchdb.fullname" . }}
+  labels:
+    {{- include "couchdb.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "couchdb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "couchdb.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "couchdb.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+            {{- if .Values.couchdb.config.https.enabled }}
+            - name: https
+              containerPort: {{ .Values.couchdb.config.https.port }}
+              protocol: TCP
+            {{- end }}
+          {{- if .Values.healthCheck.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /_up
+              port: http
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /_up
+              port: http
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+          {{- end }}
+          env:
+            - name: COUCHDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "couchdb.secretName" . }}
+                  key: admin-username
+            - name: COUCHDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "couchdb.secretName" . }}
+                  key: admin-password
+            - name: COUCHDB_DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "couchdb.secretName" . }}
+                  key: database-username
+            - name: COUCHDB_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "couchdb.secretName" . }}
+                  key: database-password
+            - name: NODENAME
+              value: "couchdb@127.0.0.1"
+            - name: ERL_FLAGS
+              value: "-setcookie {{ include "couchdb.erlangCookie" . }}"
+            {{- if .Values.couchdb.config.singleNode }}
+            - name: COUCHDB_SINGLE_NODE
+              value: "true"
+            {{- end }}
+            {{- if .Values.couchdb.config.https.enabled }}
+            - name: COUCHDB_HTTPS_PORT
+              value: "{{ .Values.couchdb.config.https.port }}"
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: couchdb-data
+              mountPath: /opt/couchdb/data
+            - name: couchdb-config
+              mountPath: /opt/couchdb/etc/local.d
+            - name: couchdb-logs
+              mountPath: /opt/couchdb/var/log
+            - name: tmp
+              mountPath: /tmp
+          {{- if .Values.couchdb.config.https.enabled }}
+            - name: couchdb-certs
+              mountPath: /opt/couchdb/etc/cert
+          {{- end }}
+      volumes:
+        - name: couchdb-data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "couchdb.pvcName" . }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: couchdb-config
+          configMap:
+            name: {{ include "couchdb.fullname" . }}-config
+        - name: couchdb-logs
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        {{- if .Values.couchdb.config.https.enabled }}
+        - name: couchdb-certs
+          secret:
+            secretName: {{ include "couchdb.fullname" . }}-certs
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

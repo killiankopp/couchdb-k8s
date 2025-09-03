@@ -1,0 +1,90 @@
+# Network Policy for CouchDB - Restrictive by default
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: couchdb-network-policy
+  namespace: kk
+  labels:
+    app.kubernetes.io/name: couchdb
+    app.kubernetes.io/instance: couchdb
+    app.kubernetes.io/managed-by: ArgoCD
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: couchdb
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow ingress from ArgoCD namespace for management
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: argocd
+    ports:
+    - protocol: TCP
+      port: 5984
+  # Allow ingress from monitoring namespace (if monitoring is enabled)
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 5984
+  # Allow ingress from specific application namespaces
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: your-app-namespace
+    ports:
+    - protocol: TCP
+      port: 5984
+  egress:
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # Allow HTTPS for external API calls (if needed)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+  # Allow HTTP for external API calls (if needed)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 80
+---
+# Network Policy for CouchDB - Allow all ingress from same namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: couchdb-internal-network-policy
+  namespace: kk
+  labels:
+    app.kubernetes.io/name: couchdb
+    app.kubernetes.io/instance: couchdb
+    app.kubernetes.io/managed-by: ArgoCD
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: couchdb
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow all ingress from same namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kk
+    ports:
+    - protocol: TCP
+      port: 5984
+    - protocol: TCP
+      port: 4369
+    - protocol: TCP
+      port: 9100

@@ -1,0 +1,213 @@
+# Default values for couchdb
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: couchdb
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "3.3.2"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 5984
+  runAsUser: 5984
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 5984
+
+service:
+  type: ClusterIP
+  port: 5984
+  targetPort: 5984
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: couchdb.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: couchdb-tls
+  #    hosts:
+  #      - couchdb.local
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# CouchDB specific configuration
+couchdb:
+  # Admin user configuration
+  admin:
+    # Username for the admin user
+    username: "admin"
+    # Password will be generated if not provided
+    password: ""
+    # Existing secret containing admin password
+    existingSecret: ""
+    # Key in the existing secret
+    existingSecretKey: "password"
+  
+  # Database configuration
+  database:
+    # Database name
+    name: "couchdb"
+    # Database user
+    username: "killian"
+    # Database password will be generated if not provided
+    password: ""
+    # Existing secret containing database password
+    existingSecret: ""
+    # Key in the existing secret
+    existingSecretKey: "password"
+  
+  # CouchDB configuration
+  config:
+    # Enable CORS
+    cors:
+      enabled: false
+      origins: "*"
+    
+    # Enable HTTPS
+    https:
+      enabled: false
+      port: 6984
+    
+    # Log level
+    logLevel: "info"
+    
+    # Single node mode (for development)
+    singleNode: true
+    
+    # Cluster configuration
+    cluster:
+      enabled: false
+      nodes: []
+    
+    # Security configuration
+    security:
+      # Require authentication for all requests
+      requireValidUser: true
+      # Enable HTTPS only
+      httpsOnly: false
+      # Session timeout in seconds
+      sessionTimeout: 3600
+
+# Persistence configuration
+persistence:
+  enabled: true
+  # storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  # existingClaim: ""
+
+# PostgreSQL configuration (optional, for external database)
+postgresql:
+  enabled: false
+  auth:
+    postgresPassword: ""
+    username: "couchdb"
+    password: ""
+    database: "couchdb"
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+
+# Monitoring configuration
+monitoring:
+  enabled: false
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    scrapeTimeout: 10s
+
+# Network policies
+networkPolicy:
+  enabled: true
+  ingress:
+    enabled: true
+    from: []
+  egress:
+    enabled: true
+    to: []
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Health checks
+healthCheck:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+# Liveness probe
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 3
+  successThreshold: 1
+
+# Readiness probe
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
