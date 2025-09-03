@@ -7,7 +7,7 @@ metadata:
 data:
   local.ini: |
     [couchdb]
-    single_node = {{ .Values.couchdb.config.singleNode | lower }}
+    single_node = {{ .Values.couchdb.config.singleNode }}
     
     [chttpd]
     port = {{ .Values.service.port }}
@@ -18,10 +18,10 @@ data:
     
     [httpd]
     {{- if .Values.couchdb.config.security.requireValidUser }}
-    require_valid_user = {{ .Values.couchdb.config.security.requireValidUser | lower }}
+    require_valid_user = {{ .Values.couchdb.config.security.requireValidUser }}
     {{- end }}
     {{- if .Values.couchdb.config.security.httpsOnly }}
-    https_only = {{ .Values.couchdb.config.security.httpsOnly | lower }}
+    https_only = {{ .Values.couchdb.config.security.httpsOnly }}
     {{- end }}
     {{- if .Values.couchdb.config.security.sessionTimeout }}
     timeout = {{ .Values.couchdb.config.security.sessionTimeout }}
@@ -49,7 +49,7 @@ data:
     
     [couch_httpd_auth]
     {{- if .Values.couchdb.config.security.requireValidUser }}
-    require_valid_user = {{ .Values.couchdb.config.security.requireValidUser | lower }}
+    require_valid_user = {{ .Values.couchdb.config.security.requireValidUser }}
     {{- end }}
     
     [admins]

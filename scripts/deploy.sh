@@ -8,7 +8,7 @@ set -e
 # Configuration
 NAMESPACE="kk"
 ARGOCD_NAMESPACE="argocd"
-APP_NAME="couchdb"
+APP_NAME="couchdb-kk"
 
 # Couleurs pour les messages
 RED='\033[0;31m'
