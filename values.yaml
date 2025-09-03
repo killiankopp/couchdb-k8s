@@ -1,0 +1,19 @@
+couchdbConfig:
+  admin:
+    username: admin
+    password: changeme
+  couchdb:
+    uuid: 6e8e1b7e-2c3a-4f7a-9b1e-8d2a4c3e7b1a
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - couchdb.kk.karned.bzh
+  tls:
+    - hosts:
+        - couchdb.kk.karned.bzh
+      secretName: couchdb-tls
+  paths:
+    - /
+  pathType: ImplementationSpecific
